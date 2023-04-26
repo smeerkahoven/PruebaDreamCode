@@ -7,11 +7,11 @@ import java.util.List;
 
 public class SquareTradeController {
 
-    private List<Category> categories = new ArrayList<>();
+    private final List<Category> categories = new ArrayList<>();
 
     public void createCategory(final String categoryName, final Category parent, final List<String> keywords) {
         if (!categories.contains(categoryName)) {
-            categories.add(new Category(categoryName, parent, keywords));
+            categories.add(new Category(categoryName, parent, keywords, 1));
         }
     }
 
@@ -21,21 +21,29 @@ public class SquareTradeController {
 
     public void createSubcategory(final String parentCategory, final String subcategory) {
         for (final Category category : categories) {
-            if (category.getCategoryName().equalsIgnoreCase(parentCategory)) {
-                category.addSubcategory(subcategory);
-            } else {
-                category.addSubcategory(parentCategory, subcategory);
+            if (category.addSubcategory(parentCategory, subcategory)) {
+                break;
             }
         }
     }
 
     public void addKeyword(final String keyword, final String category) {
-
         for (final Category item : categories) {
-            if (item.addKeyword(keyword, category)){
+            if (item.addKeyword(keyword, category)) {
                 break;
             }
         }
+    }
+
+    public Integer displayLevel(final String category){
+        for (final Category item : categories) {
+            final Integer result = item.getLevel(category);
+            if (result != 0) {
+                return result ;
+            }
+        }
+
+        return -1;
     }
 
     public List<String> getKeyWords(final String category) {
@@ -48,7 +56,6 @@ public class SquareTradeController {
 
                 return item.getKeyWords(category, item.getSubcategories());
             }
-
         }
 
         return new ArrayList<>();
@@ -59,7 +66,4 @@ public class SquareTradeController {
         return categories;
     }
 
-    public void setCategories(final List<Category> categories) {
-        this.categories = categories;
-    }
 }

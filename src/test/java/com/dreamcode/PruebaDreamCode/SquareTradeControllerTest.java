@@ -58,10 +58,18 @@ public class SquareTradeControllerTest {
         tradeController.createSubcategory("HomeAppliances", "Minor Appliances");
         tradeController.createSubcategory("HomeAppliances", "Lawn&Garden");
 
+        tradeController.createSubcategory("Lawn&Garden", "Test1");
+
         tradeController.addKeyword("Lawn&Garden","Lawn");
         tradeController.addKeyword("Lawn&Garden","Garden");
         tradeController.addKeyword("Lawn&Garden","GardeningTools");
 
+
+        assertThat(tradeController.displayLevel("HomeAppliances")).isEqualTo(1);
+
+        assertThat(tradeController.displayLevel("Lawn&Garden")).isEqualTo(2);
+
+        assertThat(tradeController.displayLevel("Test1")).isEqualTo(3);
     }
 
 
