@@ -11,7 +11,7 @@ public class SquareTradeController {
 
     public void createCategory(final String categoryName, final Category parent, final List<String> keywords) {
         if (!categories.contains(categoryName)) {
-            categories.add(new Category(categoryName, parent, keywords, 1));
+            categories.add(new Category(categoryName, parent, keywords));
         }
     }
 

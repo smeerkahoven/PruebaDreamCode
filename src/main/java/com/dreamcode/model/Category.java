@@ -15,18 +15,21 @@ public class Category {
 
     private Category root ;
 
-    private Integer level;
-
     private String categoryName ;
     protected List<String> keywords = new ArrayList<>();
 
-    public Category(final String categoryName, final Category parent, final List<String> keywords, final Integer level){
+    public Category(final String categoryName, final Category parent, final List<String> keywords){
         this.keywords = keywords;
         this.categoryName = categoryName;
         this.root = parent;
-        this.level = level;
     }
 
+    /**
+     * Adding keywords for each category
+     * @param categoryName
+     * @param keyword
+     * @return
+     */
     public boolean addKeyword(final String categoryName, final String keyword){
         if (this.categoryName.equalsIgnoreCase(categoryName)){
             addKeyword(keyword);
@@ -44,24 +47,24 @@ public class Category {
 
     public Integer getLevel(final String categoryName){
         if(this.categoryName.equalsIgnoreCase(categoryName)){
-            return getLevel();
+            return 1;
         }else {
             if (!this.getSubcategories().isEmpty()) {
-                return getLevelRecursive(categoryName, this);
+                return getLevelRecursive(categoryName, this, 2);
             }
         }
         return 0;
     }
 
-    private Integer getLevelRecursive(final String categoryName, final Category parentCategory){
+    private Integer getLevelRecursive(final String categoryName, final Category parentCategory, final Integer level){
 
         Integer result = 0 ;
         if (!parentCategory.getSubcategories().isEmpty()){
             for (final Map.Entry<String, Category> set : parentCategory.subcategories.entrySet()){
                 if (set.getKey().equalsIgnoreCase(categoryName)) {
-                    return set.getValue().getLevel();
+                    return level;
                 }else {
-                    result = getLevelRecursive(categoryName, set.getValue())   ;
+                    result = getLevelRecursive(categoryName, set.getValue(), level + 1)   ;
                 }
 
                 if (result != 0){
@@ -75,10 +78,10 @@ public class Category {
     public boolean addSubcategory(final String parentName, final String subcategory){
 
         if (this.categoryName.equalsIgnoreCase(parentName)){
-            this.subcategories.put(subcategory, new Category(subcategory,this, new ArrayList<>(),level + 1));
+            this.subcategories.put(subcategory, new Category(subcategory,this, new ArrayList<>()));
             return true ;
         }else {
-            addSubcategory(parentName, subcategory, this, level + 1);
+            addSubcategory(parentName, subcategory, this);
         }
 
         return false;
@@ -98,35 +101,66 @@ public class Category {
         return false;
     }
 
-    private boolean addSubcategory(final String parentName, final String subcategory, final Category parentCategory, final Integer levelp){
+    /**
+     * adding subcategories for each category according to its parent and category name
+     * @param parentName
+     * @param subcategory
+     * @param parentCategory
+     * @return
+     */
+    private boolean addSubcategory(final String parentName, final String subcategory, final Category parentCategory){
 
         if (!parentCategory.subcategories.isEmpty()){
             for (final Map.Entry<String, Category> set : parentCategory.subcategories.entrySet()){
                 if (set.getKey().equalsIgnoreCase(parentName)) {
-                    set.getValue().subcategories.put(subcategory, new Category(subcategory,parentCategory, new ArrayList<>(), levelp + 1 ));
+                    set.getValue().subcategories.put(subcategory, new Category(subcategory, set.getValue(), new ArrayList<>()));
                     return true ;
                 }else {
-                    addSubcategory(parentName, subcategory,set.getValue(), levelp + 1);
+                    addSubcategory(parentName, subcategory,set.getValue());
                 }
             }
         }
         return false;
     }
 
-
+    /**
+     * Obtain keywords for each category if not found on child if will return for parent root
+     * @param category
+     * @param subcategories
+     * @return
+     */
     public List<String> getKeyWords(final String category, final HashMap<String, Category> subcategories){
 
         List<String> result = new ArrayList() ;
 
         for (final Map.Entry<String, Category> set : subcategories.entrySet()){
             if (set.getKey().equalsIgnoreCase(category)) {
-                return  set.getValue().getKeywords();
+                return getRootKeywords(set.getValue());
             } else {
                 result = getKeyWords(category, set.getValue().getSubcategories());
+
+                if(!result.isEmpty()){
+                    return result;
+                }
             }
         }
-
         return result;
+    }
+
+    /**
+     * Return list of keywords from parent if child does not have
+     * @param rootCategory
+     * @return
+     */
+    public List<String> getRootKeywords(final Category rootCategory){
+        if ( rootCategory.getRoot() == null){
+            return rootCategory.getKeywords();
+        }else {
+            final List<String> result = new ArrayList<>(rootCategory.getKeywords());
+            result.addAll(getRootKeywords(rootCategory.getRoot()));
+
+            return result;
+        }
     }
 
     public List<String> getKeywords() {
@@ -141,8 +175,7 @@ public class Category {
         return categoryName;
     }
 
-    public Integer getLevel() {
-        return level;
+    public Category getRoot() {
+        return root;
     }
-
 }
